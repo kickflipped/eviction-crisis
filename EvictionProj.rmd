@@ -1,0 +1,151 @@
+---
+title: "Visualizing the PA Eviction Crisis"
+author: "Tiffany Zheng"
+subtitle: Stat41
+output:
+  html_document:
+    df_print: paged
+  pdf_document:
+    highlight: pygments
+  theme: lumen
+fontsize: 11pt
+geometry: margin=1in
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+library(maps)
+library(gganimate)
+library(gifski)
+
+```
+
+## Reading in Data
+```{r data, echo = FALSE}
+counties <- read.csv(file = 'counties.csv')
+#head(counties)
+
+#unique(counties$name)
+
+#loading data
+PA <- map_data(map = "county", region = "Pennsylvania")
+#head(PA)
+counties$name <- tolower(str_remove_all(counties$name, " County"))
+
+#merging data
+mapdata <- left_join(PA, counties, by = c("subregion" = "name"))
+
+#getting rid of duplicate Pennsylvania 
+mapdata <- subset(mapdata, select = -parent.location)
+mapdata
+
+```
+
+
+
+### Animated Map of PA Counties 
+```{r graph1, echo = FALSE, message = FALSE, warning = FALSE}
+library(viridis)
+library(ggthemes)
+library(transformr)
+
+evic_map <- ggplot(data = mapdata) +
+  geom_polygon(aes(x = long, y = lat, fill = eviction.rate/100, group = group, na.rm = TRUE),
+               color = "grey") +
+  expand_limits(x = mapdata$long, y = mapdata$lat) +
+  coord_map() +
+  scale_fill_viridis(option = "magma", direction = -1, name = "Eviction Rate",
+                     labels = scales::percent,
+                     guide = guide_colorbar(
+                       direction = "horizontal",
+                       barheight = unit(2, units = "mm"),
+                       barwidth = unit(100, units = "mm"),
+                       draw.ulim = FALSE,
+                       title.position = 'top',
+                       title.hjust = 0.5,
+                       title.vjust = 0.5)) + 
+  theme_hc() + 
+  theme(axis.text.x = element_blank(), 
+        axis.text.y = element_blank(), 
+        axis.ticks = element_blank(),
+        legend.position = "bottom") +
+  theme(plot.title = element_text(size = 10)) + 
+  xlab(" ") + ylab(" ") +
+  labs(title = "Eviction Rate in PA by County in {frame_time}",
+       subtitle = "Data from 2000-2016") +
+  transition_time(year)
+
+#animate process, it is a good idea to play around with fps and dimensions to best fit your needs. We use an fps of 2 to slow down the animation speed for demonstration purposes. 
+animate <- animate(evic_map, fps = 5, height = 574, width = 875)
+#implicitly print
+animate
+
+```
+
+
+### Scatterplot animated 
+
+```{r scatter, echo = FALSE, message = FALSE, warning = FALSE}
+library(plotly)
+library(shiny)
+head(mapdata)
+
+
+anim = mapdata %>%
+  ggplot(aes(x = median.gross.rent, y = rent.burden, size = eviction.rate, col = eviction.rate)) + 
+  geom_point(alpha = .05, na.rm = TRUE) + 
+ scale_color_viridis_c(option = "C", end = .75, guide = "legend") +
+  theme(legend.position = "bottom") + 
+  transition_time(year) +
+  shadow_mark(size = .1, alpha = .1) +
+  labs(
+    title = "Median Gross Rent, Rent Burden, and Eviction Rate over time",
+    subtitle = 'Date: {frame_time}',
+    x = "Median Gross Rent (USD)",
+    y = "Rent Burden",
+    col = "Poverty Rate",
+    size = "Poverty Rate",
+    caption = "Source: Eviction Labs"
+  )
+  
+
+animate(anim, nframes = 15)
+
+```
+
+
+### Stacked Bar Graph 
+
+```{r graph3, echo = FALSE, message = FALSE, warning = FALSE}
+library(reshape2)
+library(plotly)
+phillydata <- subset(counties, counties$name == "philadelphia")
+#phillydata
+
+
+melt(data = phillydata %>% group_by(year),
+            measure.vars = c("pct.white", "pct.af.am", "pct.hispanic", "pct.am.ind", 
+                             "pct.asian", "pct.nh.pi", "pct.multiple", "pct.other")) %>% 
+            ggplot(aes(x = year, y = value, fill = variable))+ 
+            geom_bar(stat = "identity", position="fill") + 
+            scale_y_continuous(labels = scales::percent) +
+            labs(title = "Ethnicity over 16 years in Philadelphia",
+                 fill = "Ethnicity") + 
+            theme(axis.title=element_blank()) + 
+            scale_fill_discrete(labels = c("% White", "% African", "% Hispanic", 
+                                           "% Indian", "% Asian", "% Hawaiian", 
+                                           "% Multiple", "% Other"))
+
+
+```
+
+
+### Shiny Interactive Scatterplot
+
+App included as .R file (ScatterplotEDA.R)
+
+
+### Shiny Eviction Rate by County 
+
+App included as .R file (SearchbyCounty.R)
