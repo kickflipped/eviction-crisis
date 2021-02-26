@@ -13,13 +13,13 @@ The data set I'm are using comes from the Eviction Lab, which was formed to make
 ## Shiny Apps
 
 I made 2 Shiny apps to allow myself to compare specific variables against each other. One app, SearchByCounty.R (which is included in the repo, see note below on how to run apps), compared eviction rates by county, to specifically explore the rates and changes in rates of specific counties, and compare counties with each other. You can also hover over specific years to see the exact rates. One very interesting pattern that I observed while looking through different counties, was that many counties seemed to follow the property of remaining stagnant and then quickly rising around 2005 until 2006, and then subsequently dropping drastically. Yet, Philadelphia County, the 6th largest city by population in the US and the county with the highest poverty rate in PA in 2016, did not follow this trend. Here is a screenshot from one iteration of thie graph
-![County Search](Shinyline.png)
+![County Search](https://github.com/kickflipped/eviction-crisis/blob/main/Figures/Shinyline.png)
 
 ## Note:
 You can run the shiny appes by running a short script below:
 
-  install.packages("shiny")
-  library(shiny)
-  runApp("SearchByCounty")
+  - install.packages("shiny")
+  - library(shiny)
+  - runApp("SearchByCounty")
 
 ## Conclusion
