@@ -35,7 +35,7 @@ In my second app, I made an interactive graph that allows the users to pick whic
 ![Scatter](https://github.com/kickflipped/eviction-crisis/blob/main/Figures/ShinyScatter.png)
 
 ## Note:
-You can run the shiny appes by running a short script below:
+You can run the shiny apps by running downloading the R files from the Apps Folder in the repo and running a short script below:
 
   - install.packages("shiny")
   - library(shiny)
